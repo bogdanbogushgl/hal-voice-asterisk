@@ -22,13 +22,13 @@
 
 #include "log.h"
 
-// void log_message(int priority, const char *format, ...)
-// {
-//     va_list vl;
+void log_message(int priority, const char *format, ...)
+{
+    va_list vl;
 
-//     openlog(NULL, LOG_PERROR, LOG_DAEMON | LOG_PID);
-//     va_start(vl, format);
-//     vsyslog(priority, format, vl);
-//     va_end(vl);
-//     closelog();
-// }
+    openlog(NULL, LOG_PERROR, LOG_DAEMON | LOG_PID);
+    va_start(vl, format);
+    vsyslog(priority, format, vl);
+    va_end(vl);
+    closelog();
+}

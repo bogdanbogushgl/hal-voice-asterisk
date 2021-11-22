@@ -31,18 +31,6 @@
 #define LINFO    LOG_INFO
 #define LDEBUG   LOG_DEBUG
 
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-
-#define log_message(priority, format, ...) \
-do { \
-    FILE *fd = fopen("/dev/console", "w+"); \
-    fprintf(fd, format, ##__VA_ARGS__); \
-    fclose(fd); \
-} while (0)
-
-//void log_message(int priority, const char *format, ...);
+void log_message(int priority, const char *format, ...);
 
 #endif
