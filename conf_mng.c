@@ -97,6 +97,7 @@
     "allow=ulaw\n" \
     "auth=%s\n" \
     "aors=%s\n" \
+    "direct_media=no\n" \
     "\n" \
     "[%s]\n" \
     "type=auth\n" \
