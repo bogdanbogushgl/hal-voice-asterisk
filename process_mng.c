@@ -24,6 +24,7 @@
 #include <unistd.h>
 #include "process_utils.h"
 #include "log.h"
+#include "conf_mng.h"
 
 #define ASTERISK_BIN "/usr/sbin/asterisk"
 #define RECONF_DELAY_SEC 3
@@ -32,7 +33,7 @@ static pid_t g_pid = -1;
 
 int process_start()
 {
-    char *const argv[] = { ASTERISK_BIN, "-f", NULL };
+    char *const argv[] = { ASTERISK_BIN, "-f", "-C", ASTERISK_CONF_PATH_ASTERISK, NULL };
 
     return process_execute(ASTERISK_BIN, argv, &g_pid, NULL, NULL, NULL);
 }

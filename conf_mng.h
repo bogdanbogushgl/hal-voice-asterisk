@@ -22,6 +22,13 @@
 
 #include <stdint.h>
 
+#define ASTERISK_CONF_PATH "/var/asterisk"
+#define ASTERISK_CONF_PATH_ASTERISK ASTERISK_CONF_PATH "/asterisk.conf"
+#define ASTERISK_CONF_PATH_MODULES ASTERISK_CONF_PATH "/modules.conf"
+#define ASTERISK_CONF_PATH_LOGGER ASTERISK_CONF_PATH "/logger.conf"
+#define ASTERISK_CONF_PATH_PJSIP ASTERISK_CONF_PATH "/pjsip.conf"
+#define ASTERISK_CONF_PATH_EXTENSIONS ASTERISK_CONF_PATH "/extensions.conf"
+
 typedef struct {
     int enabled;
     char *proxy_server;

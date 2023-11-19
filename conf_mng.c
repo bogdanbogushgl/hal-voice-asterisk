@@ -21,14 +21,38 @@
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include "log.h"
 #include "conf_mng.h"
 #include "str_utils.h"
 
 #define DEFAULT_SIP_PORT 5060
 
-#define ASTERISK_CONF_PATH_PJSIP "/etc/asterisk/pjsip.conf"
-#define ASTERISK_CONF_PATH_EXTENSIONS "/etc/asterisk/extensions.conf"
+#define ASTERISK_CONF \
+    "[directories](!)\n" \
+    "astcachedir => /tmp\n" \
+    "astetcdir => "ASTERISK_CONF_PATH"\n" \
+    "astmoddir => /usr/lib/asterisk/modules\n" \
+    "astvarlibdir => /var/lib/asterisk\n" \
+    "astdbdir => /var/lib/asterisk\n" \
+    "astkeydir => /var/lib/asterisk\n" \
+    "astdatadir => /usr/share/asterisk\n" \
+    "astagidir => /usr/share/asterisk/agi-bin\n" \
+    "astspooldir => /var/spool/asterisk\n" \
+    "astrundir => /var/run/asterisk\n" \
+    "astlogdir => /var/log/asterisk\n" \
+    "astsbindir => /usr/sbin\n"
+
+#define MODULES_CONF \
+    "[modules]\n" \
+    "autoload=yes\n"
+
+#define LOGGER_CONF \
+    "[general]\n" \
+    "[logfiles]\n" \
+    "console => notice,warning,error\n" \
+    "messages => notice,warning,error\n"
 
 #define ASTERISK_EXTENSION_1 "601"
 #define ASTERISK_EXTENSION_2 "602"
@@ -123,6 +147,96 @@
     "exten => _X.,1,Dial(PJSIP/${EXTEN}@%s)\n"
 
 static sip_conf_t g_sip_conf = {};
+
+static int conf_write_asterisk()
+{
+    FILE *file;
+    int ret = -1;
+    
+    if ((file = fopen(ASTERISK_CONF_PATH_ASTERISK, "w")) == NULL)
+    {
+        log_message(LERR, "Failed to open %s for write, error %s\n",
+            ASTERISK_CONF_PATH_ASTERISK, strerror(errno));
+        return -1;
+    }
+
+    if (fprintf(file, ASTERISK_CONF) < 0)
+    {
+        log_message(LERR, "Failed to write %s\n",
+            ASTERISK_CONF_PATH_ASTERISK);
+        goto Exit;
+    }
+
+    ret = 0;
+Exit:
+    if (fclose(file) == EOF)
+    {
+        log_message(LERR, "Failed to close %s\n",
+            ASTERISK_CONF_PATH_ASTERISK);
+        return -1;
+    }
+    return ret;
+}
+
+static int conf_write_modules()
+{
+    FILE *file;
+    int ret = -1;
+    
+    if ((file = fopen(ASTERISK_CONF_PATH_MODULES, "w")) == NULL)
+    {
+        log_message(LERR, "Failed to open %s for write, error %s\n",
+            ASTERISK_CONF_PATH_MODULES, strerror(errno));
+        return -1;
+    }
+
+    if (fprintf(file, MODULES_CONF) < 0)
+    {
+        log_message(LERR, "Failed to write %s\n",
+            ASTERISK_CONF_PATH_MODULES);
+        goto Exit;
+    }
+
+    ret = 0;
+Exit:
+    if (fclose(file) == EOF)
+    {
+        log_message(LERR, "Failed to close %s\n",
+            ASTERISK_CONF_PATH_MODULES);
+        return -1;
+    }
+    return ret;
+}
+
+static int conf_write_logger()
+{
+    FILE *file;
+    int ret = -1;
+    
+    if ((file = fopen(ASTERISK_CONF_PATH_LOGGER, "w")) == NULL)
+    {
+        log_message(LERR, "Failed to open %s for write, error %s\n",
+            ASTERISK_CONF_PATH_LOGGER, strerror(errno));
+        return -1;
+    }
+
+    if (fprintf(file, LOGGER_CONF) < 0)
+    {
+        log_message(LERR, "Failed to write %s\n",
+            ASTERISK_CONF_PATH_LOGGER);
+        goto Exit;
+    }
+
+    ret = 0;
+Exit:
+    if (fclose(file) == EOF)
+    {
+        log_message(LERR, "Failed to close %s\n",
+            ASTERISK_CONF_PATH_LOGGER);
+        return -1;
+    }
+    return ret;
+}
 
 static int conf_write_pjsip_transport(FILE *file)
 {
@@ -432,6 +546,15 @@ Exit:
 
 static int conf_set(sip_conf_t *sip_conf)
 {
+    if (conf_write_asterisk() == -1)
+        return -1;
+
+    if (conf_write_modules() == -1)
+        return -1;
+
+    if (conf_write_logger() == -1)
+        return -1;
+
     if (conf_write_pjsip(sip_conf) == -1)
         return -1;
 
@@ -443,6 +566,7 @@ static int conf_set(sip_conf_t *sip_conf)
 
 int conf_init()
 {
+    mkdir(ASTERISK_CONF_PATH, 0644);
     return conf_set(&g_sip_conf);
 }
 
